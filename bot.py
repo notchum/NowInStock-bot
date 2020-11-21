@@ -38,13 +38,13 @@ class GpuBot:
 
 		self.monitor_loop(gpus_lst[0][0])
 
-	def monitor_loop(self, gpu):
+	def monitor_loop(self):
 		while True:
-			self.monitor(gpu)
+			self.monitor()
 			time.sleep(self.settings['check_interval_sec'])
 	
-	def monitor(self, gpu):
-		soup = bs4.BeautifulSoup(urllib2.urlopen("https://www.nowinstock.net/computers/videocards/" + gpu), 'html.parser')
+	def monitor(self):
+		soup = bs4.BeautifulSoup(urllib2.urlopen("https://www.nowinstock.net/videogaming/consoles/sonyps5/"), 'html.parser')
 
 		# <div id="data">
 		# <table width="610">
@@ -70,7 +70,7 @@ class GpuBot:
 				continue # ignore the ebay links
 
 			if self.is_new_link(link):
-				self.dispatch_link(gpu, link)
+				self.dispatch_link(link)
 
 	def is_new_link(self, link):
 		if link not in self.link_map:
@@ -86,11 +86,10 @@ class GpuBot:
 					del self.link_map[l]
 			time.sleep(self.settings["gc_interval_sec"])
 
-	def dispatch_link(self, gpu, link):
+	def dispatch_link(self, link):
 		link = self.strip_referrals(link)
 		domain = urlparse(link).hostname
-		print "found", gpu, "url:", link
-		self.counter.incr('gpus', gpu)
+		print(f"found ps5 --- url: {link}")
 		self.counter.incr('domains', domain)
 		# take action
 		if 'newegg' in link:
@@ -105,14 +104,14 @@ class GpuBot:
 			return
 		elif 'amazon' in link:
 			pass #TODO			
-		elif 'bhphotovideo' in link:
+		elif 'bestbuy' in link:
 			pass #TODO
-		elif 'nvidia' in link:
+		elif 'walmart' in link:
 			pass #TODO			
 		else:
 			pass #TODO			
 		
-		print 'havent implemented', domain
+		print('havent implemented', domain)
 		util.print_header("PARSED LINK:", link)
 		webbrowser.open(link)
 		if platform == "linux" or platform == "linux2" or platform == "darwin": # Mac & Linux
