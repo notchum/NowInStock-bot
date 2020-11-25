@@ -1,7 +1,7 @@
 import webbrowser
 import requests
 import bs4
-import urllib2
+import urllib
 import newegg
 import threading
 import json
@@ -13,8 +13,6 @@ elif platform == "win32":
     	import winsound
 import counter
 import time
-from urlparse import urlparse
-import util
 
 class GpuBot:
 
@@ -36,7 +34,7 @@ class GpuBot:
 		gc.daemon=True
 		gc.start()
 
-		self.monitor_loop(gpus_lst[0][0])
+		self.monitor_loop()
 
 	def monitor_loop(self):
 		while True:
@@ -44,7 +42,7 @@ class GpuBot:
 			time.sleep(self.settings['check_interval_sec'])
 	
 	def monitor(self):
-		soup = bs4.BeautifulSoup(urllib2.urlopen("https://www.nowinstock.net/videogaming/consoles/sonyps5/"), 'html.parser')
+		soup = bs4.BeautifulSoup(urllib.urlopen("https://www.nowinstock.net/videogaming/consoles/sonyps5/"), 'html.parser')
 
 		# <div id="data">
 		# <table width="610">
@@ -61,7 +59,7 @@ class GpuBot:
 			link = found.find('a', attrs={'href': re.compile("^http")})
 			# print 'link:', link
 			if link is None:
-				print 'error, why couldnt we find a link:', found
+				print('error, why couldnt we find a link:', found)
 				continue
 			
 			# decode it
@@ -82,55 +80,19 @@ class GpuBot:
 		while True:
 			for l, tt in self.link_map.items():
 				if time.time() - tt > self.settings['gc_expire_sec']:
-					print "expired link, removing:", l
+					print("expired link, removing:", l)
 					del self.link_map[l]
 			time.sleep(self.settings["gc_interval_sec"])
 
 	def dispatch_link(self, link):
-		link = self.strip_referrals(link)
 		domain = urlparse(link).hostname
 		print(f"found ps5 --- url: {link}")
 		self.counter.incr('domains', domain)
 		# take action
-		if 'newegg' in link:
-			item_id = link.split('?Item=')[1].split('&ignorebbr=')[0]
-			newegg.Newegg(item_id)
-			if platform == "linux" or platform == "linux2" or platform == "darwin": # Mac & Linux
-					pygame.mixer.init()
-					pygame.mixer.music.load('sound_file')
-					pygame.mixer.music.play()
-			elif platform == "win32":
-    				winsound.PlaySound(self.settings['sound_file'], winsound.SND_ASYNC)
-			return
-		elif 'amazon' in link:
-			pass #TODO			
-		elif 'bestbuy' in link:
-			pass #TODO
-		elif 'walmart' in link:
-			pass #TODO			
+		if 'walmart' in link:
+			return			
 		else:
-			pass #TODO			
-		
-		print('havent implemented', domain)
-		util.print_header("PARSED LINK:", link)
-		webbrowser.open(link)
-		if platform == "linux" or platform == "linux2" or platform == "darwin": # Mac & Linux
-				pygame.mixer.init()
-				pygame.mixer.music.load('sound_file')
-				pygame.mixer.music.play()
-		elif platform == "win32":
-    			winsound.PlaySound(self.settings['sound_file'], winsound.SND_ASYNC)
-	
-	def strip_referrals(self, link):
-		# screw that site, they put referral links!
-		if 'send.onenetworkdirect.net' in link:
-			link = link.split('&lnkurl=')[1]
-		elif 'redirect.viglink.com' in link:
-			link = link.split('&u=')[1]
-		else:
-			link = 'http' + link.split('http')[-1:][0] # grab the last if there exists mmore than 1 http
-			
-		return link
+			print('havent implemented', domain)
 
 	def join(self):
 		for t in self.threads:
