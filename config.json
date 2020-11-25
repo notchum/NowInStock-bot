@@ -1,0 +1,11 @@
+{
+   "first_name": "John",
+   "last_name": "Smith", 
+   "email": "mail@gmail.com", 
+   "address": "1234 Apple Lane", 
+   "phone": "1234567890",
+   "credit_number": "123456789",
+   "credit_month": "00", 
+   "credit_year": "25", 
+   "credit_ccv": "123"
+}

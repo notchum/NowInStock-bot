@@ -4,4 +4,4 @@ if __name__ == '__main__':
 	bot = GpuBot('settings.json')
 	bot.run()
 	bot.join()
-	print "Goodbye."
+	print("Goodbye.")
